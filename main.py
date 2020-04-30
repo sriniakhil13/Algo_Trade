@@ -221,4 +221,5 @@ def new_stratergy():
 
 
 if time.time()*1000 == sys.argv[0]:
+    print("Program started !!! ")
     new_stratergy()
