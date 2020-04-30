@@ -42,7 +42,7 @@ def binance_future_limit(side,quantity,price):
 
     # call api
     order_update = requests.post(url,headers=header,params= params)
-    # print(order_update.json())
+    print(order_update.json())
     order_update = order_update.json()
 
     order_details = MyTrade(order_update['orderId'],quantity,side)
@@ -140,7 +140,7 @@ def binance_future_markprice():
 
     response = requests.get(url,headers=header,params= params)
     response = eval(response.text)
-    print(response['markPrice'])
+    # print(response['markPrice'])
     return response['markPrice']
 
 
@@ -210,8 +210,8 @@ def new_stratergy():
         print(new_df.tail(2))
 
         #essential values
-        current_open= new_df['open'][999]
-        current_rsi_open = new_df['rsi_open'][999]
+        current_open= new_df['close'][999]
+        current_rsi_close = new_df['rsi_close'][998]
         current_bb_hband = new_df['bb_hband'][999]
         current_bb_lband = new_df['bb_lband'][999]
         current_volume = new_df['Quote asset volume'][998]
@@ -222,20 +222,21 @@ def new_stratergy():
             side = 'BUY'
             quantity=0.03
 
-            if current_rsi_open > 69 and CAN_OPEN_POSITION == 1:
+            if current_rsi_close > 69 and CAN_OPEN_POSITION == 1:
 
                 CAN_OPEN_POSITION = 0
                 if current_trend == 'up':
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price),2)
-                    limit_price = market_price+((market_price*0.04)/100)
+                    limit_price = round(market_price+((market_price*0.04)/100),2)
+                    print(limit_price)
                     print("LONG order placing")
                     trade_details = binance_future_limit(side,quantity,limit_price)
                     binance_query_order(trade_details)
 
         if current_open < current_bb_lband: # and current_volume/current_open > 800:
 
-            if current_rsi_open < 31 and CAN_OPEN_POSITION == 1:
+            if current_rsi_close < 31 and CAN_OPEN_POSITION == 1:
 
                 CAN_OPEN_POSITION = 0
                 side = 'SELL'
@@ -243,7 +244,7 @@ def new_stratergy():
                 if current_trend == 'down':
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price), 2)
-                    limit_price = market_price + ((market_price * 0.04) / 100)
+                    limit_price = round(market_price + ((market_price * 0.04) / 100),2)
                     print("SHORT order placing")
                     trade_details = binance_future_limit(side, quantity, limit_price)
                     binance_query_order(trade_details)
@@ -253,7 +254,7 @@ def new_stratergy():
 
 print("Program triggered !!! ")
 
-
+# new_stratergy()
 while(True):
 
     if time.time()*1000 >= int(sys.argv[1]):
