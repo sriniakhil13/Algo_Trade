@@ -220,6 +220,8 @@ def new_stratergy():
         time.sleep(300)
 
 
-if time.time()*1000 == sys.argv[0]:
-    print("Program started !!! ")
-    new_stratergy()
+print("Program triggered !!! ")
+while(True):
+    if str(time.time()*1000) >= sys.argv[0]:
+        print("Program started !!! ")
+        new_stratergy()
