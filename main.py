@@ -92,6 +92,7 @@ def binance_query_order(trade):
         activationPrice = int(trade.buy_price) + operator*40
         callbackRate = 0.1
         if status == 'FILLED':
+            print("Order filled subsequent order placed ")
             trade.buy_price = order_update['avgPrice']
             trade.qty = order_update['executedQty']
             response = binance_future_trailing_stoploss(trade,activationPrice,callbackRate)
@@ -200,6 +201,7 @@ def new_stratergy():
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price),2)
                     limit_price = market_price+((market_price*0.04)/100)
+                    print("LONG order placing")
                     trade_details = binance_future_limit(side,quantity,limit_price)
                     binance_query_order(trade_details)
 
@@ -211,6 +213,7 @@ def new_stratergy():
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price), 2)
                     limit_price = market_price + ((market_price * 0.04) / 100)
+                    print("SHORT order placing")
                     trade_details = binance_future_limit(side, quantity, limit_price)
                     binance_query_order(trade_details)
 
