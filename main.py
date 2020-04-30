@@ -101,6 +101,7 @@ def binance_query_order(trade):
                 print("Sucessfully placed ")
             break
 
+
 def binance_future_markprice():
     url = base_url + '/fapi/v1/premiumIndex'
     timestamp = str(time.time() * 1000)
@@ -111,12 +112,6 @@ def binance_future_markprice():
     response = eval(response.text)
     print(response['markPrice'])
     return response['markPrice']
-
-
-
-
-
-
 
 
 def heikin_ashi(df):
@@ -192,10 +187,9 @@ def new_stratergy():
         current_trend = new_df['STX_10_3'][999]
         current_trend_indicator = new_df['ST_10_3'][999]
 
-
         if current_open > current_bb_hband: #and current_volume/current_open > 800:
             side = 'BUY'
-            quantity=0.05
+            quantity=0.03
             if current_rsi_open > 69:
                 if current_trend == 'up':
                     market_price = binance_future_markprice()
@@ -208,7 +202,7 @@ def new_stratergy():
         if current_open < current_bb_lband: # and current_volume/current_open > 800:
             if current_rsi_open < 31:
                 side = 'SELL'
-                quantity = 0.05
+                quantity = 0.03
                 if current_trend == 'down':
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price), 2)
@@ -221,7 +215,10 @@ def new_stratergy():
 
 
 print("Program triggered !!! ")
+
 while(True):
-    if str(time.time()*1000) >= sys.argv[0]:
+
+    if time.time()*1000 >= int(sys.argv[1]):
         print("Program started !!! ")
         new_stratergy()
+        break
