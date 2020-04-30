@@ -29,7 +29,7 @@ def binance_future_limit(side,quantity,price):
     url = base_url+'/fapi/v1/order'
     timestamp = str(time.time() * 1000)
 
-    message = 'symbol=BTCUSDT&side='+side+'&type=LIMIT&timeInForce=GTC&quantity='+quantity+'&price='+price+'&timestamp='+timestamp
+    message = 'symbol=BTCUSDT&side='+side+'&type=LIMIT&timeInForce=GTC&quantity='+str(quantity)+'&price='+str(price)+'&timestamp='+timestamp
 
     signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
                          digestmod=hashlib.sha256).hexdigest().upper()
@@ -52,7 +52,7 @@ def binance_future_trailing_stoploss(trade,activationPrice,callbackRate):
         new_side = 'SELL'
     else:
         new_side = 'BUY'
-    message = 'symbol=BTCUSDT&side='+new_side+'&type=TRAILING_STOP_MARKET&quantity='+trade.qty+'&activationPrice='+activationPrice+'&callbackRate='+callbackRate+'&timestamp='+timestamp
+    message = 'symbol=BTCUSDT&side='+str(new_side)+'&type=TRAILING_STOP_MARKET&quantity='+str(trade.qty)+'&activationPrice='+str(activationPrice)+'&callbackRate='+str(callbackRate)+'&timestamp='+timestamp
 
     signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
                          digestmod=hashlib.sha256).hexdigest().upper()
