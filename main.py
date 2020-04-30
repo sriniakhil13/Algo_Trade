@@ -9,6 +9,8 @@ import hashlib
 import sys
 import json
 
+
+
 CAN_OPEN_POSITION = 1
 
 class MyTrade():
@@ -168,8 +170,7 @@ def heikin_ashi(df):
 
 
 def new_stratergy():
-
-
+    global CAN_OPEN_POSITION
     while(True):
         data = requests.get('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=1000')
 
@@ -220,9 +221,9 @@ def new_stratergy():
         if current_open > current_bb_hband: #and current_volume/current_open > 800:
             side = 'BUY'
             quantity=0.03
-            global CAN_OPEN_POSITION
+
             if current_rsi_open > 69 and CAN_OPEN_POSITION == 1:
-                global CAN_OPEN_POSITION
+
                 CAN_OPEN_POSITION = 0
                 if current_trend == 'up':
                     market_price = binance_future_markprice()
@@ -233,9 +234,9 @@ def new_stratergy():
                     binance_query_order(trade_details)
 
         if current_open < current_bb_lband: # and current_volume/current_open > 800:
-            global CAN_OPEN_POSITION
+
             if current_rsi_open < 31 and CAN_OPEN_POSITION == 1:
-                global CAN_OPEN_POSITION
+
                 CAN_OPEN_POSITION = 0
                 side = 'SELL'
                 quantity = 0.03
