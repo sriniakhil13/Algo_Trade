@@ -176,7 +176,7 @@ def new_stratergy():
 
         new_df['rsi_close'] = rsi_close.values
         new_df['rsi_open'] = rsi_open.values
-        new_df['rsi_diff'] = new_df['rsi'] - new_df['rsi_open']
+        new_df['rsi_diff'] = new_df['rsi_close'] - new_df['rsi_open']
         new_df['bb_hband'] = bb_hband.values
         new_df['bb_lband'] = bb_lband.values
 
