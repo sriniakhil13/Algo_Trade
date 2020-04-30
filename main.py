@@ -7,7 +7,9 @@ import requests
 import hmac
 import hashlib
 import sys
+import json
 
+CAN_OPEN_POSITION = 1
 
 class MyTrade():
     def __init__(self, Order_Id,qty,side):
@@ -15,7 +17,7 @@ class MyTrade():
         self.buy_price = 0
         self.qty = qty
         self.side = side
-        self.close_postion_order_id = 0
+        self.close_position_order_id = 0
 
 
 
@@ -27,7 +29,7 @@ header = {'X-MBX-APIKEY': config.API_Key}
 def binance_future_limit(side,quantity,price):
 
     url = base_url+'/fapi/v1/order'
-    timestamp = str(time.time() * 1000)
+    timestamp = str(round(time.time())*1000)
 
     message = 'symbol=BTCUSDT&side='+side+'&type=LIMIT&timeInForce=GTC&quantity='+str(quantity)+'&price='+str(price)+'&timestamp='+timestamp
 
@@ -38,15 +40,16 @@ def binance_future_limit(side,quantity,price):
 
     # call api
     order_update = requests.post(url,headers=header,params= params)
-    order_update = eval(order_update.text)
+    # print(order_update.json())
+    order_update = order_update.json()
 
-    order_details = MyTrade(order_update['open_position_order_id'],quantity,side)
+    order_details = MyTrade(order_update['orderId'],quantity,side)
 
     return order_details
 
 def binance_future_trailing_stoploss(trade,activationPrice,callbackRate):
     url = base_url + '/fapi/v1/order'
-    timestamp = str(time.time() * 1000)
+    timestamp = str(round(time.time()) * 1000)
 
     if trade.side == 'BUY':
         new_side = 'SELL'
@@ -61,27 +64,51 @@ def binance_future_trailing_stoploss(trade,activationPrice,callbackRate):
 
     # call api
     order_update = requests.post(url, headers=header, params=params)
-    order_update = eval(order_update.text)
-
-    trade.close_postion_order_id = order_update['orderId']
+    order_update = order_update.json()
+    print(order_update)
+    trade.close_position_order_id = order_update['orderId']
     return 1
 
 def binance_query_order(trade):
 
     url = base_url+'/fapi/v1/order'
-    timestamp = str(time.time() * 1000)
+    timestamp = str(round(time.time()) * 1000)
 
-    message = 'symbol=BTCUSDT&timestamp='+timestamp+'&orderId='+trade.open_position_order_id
+    if trade.close_position_order_id != 0:
+        while(True):
 
-    signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
-                         digestmod=hashlib.sha256).hexdigest().upper()
+            message = 'symbol=BTCUSDT&timestamp=' + timestamp + '&orderId=' + str(trade.close_position_order_id)
 
-    params = message + '&signature=' + signature
+            signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
+                                 digestmod=hashlib.sha256).hexdigest().upper()
+
+            params = message + '&signature=' + signature
+
+            order_update = requests.get(url, headers=header, params=params)
+            order_update = order_update.json()
+
+            status = order_update['status']
+
+            if status == 'FILLED':
+                global CAN_OPEN_POSITION
+                CAN_OPEN_POSITION = 1
+                break
+
 
     while(True):
         # call api
-        order_update = requests.post(url, headers=header, params=params)
-        order_update = eval(order_update.text)
+
+        message = 'symbol=BTCUSDT&timestamp=' + timestamp + '&orderId=' + str(trade.open_position_order_id)
+
+        signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
+                             digestmod=hashlib.sha256).hexdigest().upper()
+
+        params = message + '&signature=' + signature
+
+
+        order_update = requests.get(url, headers=header, params=params)
+        order_update = order_update.json()
+        # print(order_update)
 
         if trade.side == 'BUY':
             operator = 1
@@ -100,6 +127,7 @@ def binance_query_order(trade):
             if response == 1:
                 print("Sucessfully placed ")
             break
+
 
 
 def binance_future_markprice():
@@ -140,6 +168,8 @@ def heikin_ashi(df):
 
 
 def new_stratergy():
+
+
     while(True):
         data = requests.get('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=1000')
 
@@ -190,7 +220,10 @@ def new_stratergy():
         if current_open > current_bb_hband: #and current_volume/current_open > 800:
             side = 'BUY'
             quantity=0.03
-            if current_rsi_open > 69:
+            global CAN_OPEN_POSITION
+            if current_rsi_open > 69 and CAN_OPEN_POSITION == 1:
+                global CAN_OPEN_POSITION
+                CAN_OPEN_POSITION = 0
                 if current_trend == 'up':
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price),2)
@@ -200,7 +233,10 @@ def new_stratergy():
                     binance_query_order(trade_details)
 
         if current_open < current_bb_lband: # and current_volume/current_open > 800:
-            if current_rsi_open < 31:
+            global CAN_OPEN_POSITION
+            if current_rsi_open < 31 and CAN_OPEN_POSITION == 1:
+                global CAN_OPEN_POSITION
+                CAN_OPEN_POSITION = 0
                 side = 'SELL'
                 quantity = 0.03
                 if current_trend == 'down':
@@ -215,6 +251,7 @@ def new_stratergy():
 
 
 print("Program triggered !!! ")
+
 
 while(True):
 
