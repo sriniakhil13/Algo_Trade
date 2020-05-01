@@ -108,7 +108,7 @@ def binance_query_order(trade):
         params = message + '&signature=' + signature
         order_update = requests.get(url, headers=header, params=params)
         order_update = order_update.json()
-        print(order_update)
+        # print(order_update)
 
         if trade.side == 'BUY':
             operator = 1
