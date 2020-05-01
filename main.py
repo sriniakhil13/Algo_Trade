@@ -116,7 +116,7 @@ def binance_query_order(trade):
             operator = -1
 
         status = order_update['status']
-        activationPrice = int(trade.buy_price) + operator*30
+        activationPrice = int(trade.buy_price) + operator*25
         callbackRate = 0.1
         if status == 'FILLED':
             print("Order filled subsequent order placed ")
