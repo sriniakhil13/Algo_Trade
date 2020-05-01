@@ -222,7 +222,7 @@ def new_stratergy():
                 if current_trend == 'up':
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price),2)
-                    limit_price = round(market_price+((market_price*0.04)/100),2)
+                    limit_price = round(market_price+((market_price*0.05)/100),2)
                     print(limit_price)
                     print("LONG order placing")
                     trade_details = binance_future_limit(side,quantity,limit_price)
@@ -238,7 +238,7 @@ def new_stratergy():
                 if current_trend == 'down':
                     market_price = binance_future_markprice()
                     market_price = round(float(market_price), 2)
-                    limit_price = round(market_price + ((market_price * 0.04) / 100),2)
+                    limit_price = round(market_price - ((market_price * 0.05) / 100),2)
                     print("SHORT order placing")
                     trade_details = binance_future_limit(side, quantity, limit_price)
                     binance_query_order(trade_details)
