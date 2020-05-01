@@ -31,9 +31,9 @@ header = {'X-MBX-APIKEY': config.API_Key}
 def binance_future_limit(side,quantity,price):
 
     url = base_url+'/fapi/v1/order'
-    timestamp = str(round(time.time())*1000)
 
-    message = 'symbol=BTCUSDT&side='+side+'&type=LIMIT&timeInForce=GTC&quantity='+str(quantity)+'&price='+str(price)+'&timestamp='+timestamp
+
+    message = 'symbol=BTCUSDT&side='+side+'&type=LIMIT&timeInForce=GTC&quantity='+str(quantity)+'&price='+str(price)+'&timestamp='+str(round(time.time()) * 1000)
 
     signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
                          digestmod=hashlib.sha256).hexdigest().upper()
@@ -51,13 +51,13 @@ def binance_future_limit(side,quantity,price):
 
 def binance_future_trailing_stoploss(trade,activationPrice,callbackRate):
     url = base_url + '/fapi/v1/order'
-    timestamp = str(round(time.time()) * 1000)
+
 
     if trade.side == 'BUY':
         new_side = 'SELL'
     else:
         new_side = 'BUY'
-    message = 'symbol=BTCUSDT&side='+str(new_side)+'&type=TRAILING_STOP_MARKET&quantity='+str(trade.qty)+'&activationPrice='+str(activationPrice)+'&callbackRate='+str(callbackRate)+'&timestamp='+timestamp
+    message = 'symbol=BTCUSDT&side='+str(new_side)+'&type=TRAILING_STOP_MARKET&quantity='+str(trade.qty)+'&activationPrice='+str(activationPrice)+'&callbackRate='+str(callbackRate)+'&timestamp='+str(round(time.time()) * 1000)
 
     signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
                          digestmod=hashlib.sha256).hexdigest().upper()
@@ -74,12 +74,12 @@ def binance_future_trailing_stoploss(trade,activationPrice,callbackRate):
 def binance_query_order(trade):
 
     url = base_url+'/fapi/v1/order'
-    timestamp = str(round(time.time()) * 1000)
+
 
     if trade.close_position_order_id != 0:
         while(True):
 
-            message = 'symbol=BTCUSDT&timestamp=' + timestamp + '&orderId=' + str(trade.close_position_order_id)
+            message = 'symbol=BTCUSDT&timestamp=' + str(round(time.time()) * 1000) + '&orderId=' + str(trade.close_position_order_id)
 
             signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
                                  digestmod=hashlib.sha256).hexdigest().upper()
@@ -100,17 +100,15 @@ def binance_query_order(trade):
     while(True):
         # call api
 
-        message = 'symbol=BTCUSDT&timestamp=' + timestamp + '&orderId=' + str(trade.open_position_order_id)
+        message = 'symbol=BTCUSDT&timestamp=' + str(round(time.time()) * 1000) + '&orderId=' + str(trade.open_position_order_id)
 
         signature = hmac.new(bytes(config.Secret_Key, 'latin-1'), msg=bytes(message, 'latin-1'),
                              digestmod=hashlib.sha256).hexdigest().upper()
 
         params = message + '&signature=' + signature
-
-
         order_update = requests.get(url, headers=header, params=params)
         order_update = order_update.json()
-        # print(order_update)
+        print(order_update)
 
         if trade.side == 'BUY':
             operator = 1
@@ -118,7 +116,7 @@ def binance_query_order(trade):
             operator = -1
 
         status = order_update['status']
-        activationPrice = int(trade.buy_price) + operator*40
+        activationPrice = int(trade.buy_price) + operator*30
         callbackRate = 0.1
         if status == 'FILLED':
             print("Order filled subsequent order placed ")
@@ -195,11 +193,7 @@ def new_stratergy():
 
         rsi_open = ta.momentum.RSIIndicator(new_df['open'], 14)
         rsi_open = rsi_open.rsi()
-
-
         new_df = indicators.SuperTrend(new_df,10,3,ohlc=['open','high','low','close'])
-
-
         new_df['rsi_close'] = rsi_close.values
         new_df['rsi_open'] = rsi_open.values
         new_df['rsi_diff'] = new_df['rsi_close'] - new_df['rsi_open']
@@ -253,6 +247,8 @@ def new_stratergy():
 
 
 print("Program triggered !!! ")
+
+
 
 # new_stratergy()
 while(True):
